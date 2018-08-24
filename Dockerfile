@@ -103,7 +103,11 @@ RUN curl -fSL https://github.com/Yelp/dumb-init/releases/download/v${DUMBINIT_VE
     echo "$DUMBINIT_SHA256 */usr/local/bin/dumb-init" | sha256sum -c - && \
     chmod +x /usr/local/bin/dumb-init && \
     # COMPOSER
-    wget -P /usr/bin/ https://getcomposer.org/download/${COMPOSER_VERSION}/composer.phar
+    EXPECTED_COMPOSER_SIGNATURE=$(wget -q -O - https://composer.github.io/installer.sig) && \
+    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
+    php -r "if (hash_file('SHA384', 'composer-setup.php') === '${EXPECTED_COMPOSER_SIGNATURE}') { echo 'Composer.phar Installer verified'; } else { echo 'Composer.phar Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" && \
+    php composer-setup.php --install-dir=/usr/bin --filename=composer && \
+    php -r "unlink('composer-setup.php');"
 
 RUN mkdir -p /etc/nginx && \
     mkdir -p /var/www/app && \

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+set -e
+
+DATE=$(date '+%Y-%m-%d %H')
+key="$DATE $DBLOCK_KEY_SALT "$(echo $1 | sed 's/[^0-9A-Za-z ]*//g')
+cmd=$(echo "$2 $3 $4 $5 $6 $7 $8 $9")
+
+DB_HOST=${DBLOCK_DB_HOST:-'172.17.42.1'}
+DB_PORT=${DBLOCK_DB_PORT:-'3306'}
+DB_USER=${DBLOCK_DB_USER:-'cron_lock'}
+DB_PASS=${DBLOCK_DB_PASS:-'cron_lock'}
+
+DB=${DBLOCK_DB_PASS:-'cron_lock'}
+TABLE='jobs'
+
+MYSQLBIN=`command -v mysql`
+MYSQL_EXEC="$MYSQLBIN -u $DB_USER -p$DB_PASS -h$DB_HOST -P$DB_PORT -A -Bse"
+
+QUERY_INSERT="INSERT INTO $DB.$TABLE (job_key) VALUES ('$key');"
+QUERY_DELETE="DELETE FROM $DB.$TABLE WHERE  job_key='$key';"
+
+$MYSQL_EXEC "$QUERY_INSERT"
+
+echo $cmd || true
+eval $cmd || true
+
+$MYSQL_EXEC "$QUERY_DELETE"

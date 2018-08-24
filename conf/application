@@ -1,0 +1,14 @@
+/application/app/logs/*log {
+  compress
+  copytruncate
+  daily
+  dateext
+  delaycompress
+  missingok
+  rotate 5
+  size=300k
+  su root www-data
+  postrotate
+    /etc/logrotate.move.sh
+  endscript
+}

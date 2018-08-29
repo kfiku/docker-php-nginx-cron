@@ -2,6 +2,9 @@ FROM php:7.1.20-fpm-alpine
 
 LABEL maintainer="Grzegorz Klimek <kfiku.com@gmail.com>"
 
+# TIMEZONE
+ENV TZ=Europe/Prague
+
 # DEPENDENCIES
 RUN echo http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories && \
     echo http://nl.alpinelinux.org/alpine/edge/community >> /etc/apk/repositories && \
@@ -27,7 +30,8 @@ RUN echo http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories 
         libmcrypt \
         libpng \
         libxml2 \
-        openssl && \
+        openssl \
+        tzdata && \
     # PHP BUILD DEPT
     apk add --no-cache --virtual .build-deps \
         freetype-dev \
@@ -65,7 +69,21 @@ RUN echo http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories 
         xml \
         xmlrpc \
         zip && \
-    apk del .build-deps
+    apk del .build-deps && \
+    # NGINX DIRS
+    mkdir -p /etc/nginx && \
+    mkdir -p /var/www/app && \
+    mkdir -p /run/nginx && \
+    mkdir -p /etc/nginx/sites-available/ && \
+    mkdir -p /etc/nginx/sites-enabled/ && \
+    mkdir -p /etc/nginx/ssl/ && \
+    rm -Rf /var/www/* && \
+    mkdir /var/www/html/ && \
+    cp /usr/share/zoneinfo/Europe/Prague /etc/localtime && \
+    echo "Europe/Prague" >  /etc/timezone
+
+ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so php
+ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so php-fpm
 
 # PHP-GEOIP
 # RUN pecl install geoip-1.1.1
@@ -95,31 +113,28 @@ RUN apk add --no-cache --virtual .build-deps \
     rm /usr/bin/php-config && \
     echo "extension=geoip.so" > /usr/local/etc/php/conf.d/00_geoip.ini
 
-ENV DUMBINIT_VERSION=1.1.3 \
-    DUMBINIT_SHA256=1af305fc011c72aa899c88fe6576e82f2c7657d8d5212a13583fd2de012e478f \
-    COMPOSER_VERSION=1.7.2
 
+# DUMBINIT
+ENV DUMBINIT_VERSION=1.2.2 \
+    DUMBINIT_SHA256=37f2c1f0372a45554f1b89924fbb134fc24c3756efaedf11e07f599494e0eff9
 RUN curl -fSL https://github.com/Yelp/dumb-init/releases/download/v${DUMBINIT_VERSION}/dumb-init_${DUMBINIT_VERSION}_amd64 -o /usr/local/bin/dumb-init && \
     echo "$DUMBINIT_SHA256 */usr/local/bin/dumb-init" | sha256sum -c - && \
-    chmod +x /usr/local/bin/dumb-init && \
-    # COMPOSER
-    EXPECTED_COMPOSER_SIGNATURE=$(wget -q -O - https://composer.github.io/installer.sig) && \
+    chmod +x /usr/local/bin/dumb-init
+
+
+# COMPOSER
+ENV COMPOSER_VERSION=1.7.2
+RUN EXPECTED_COMPOSER_SIGNATURE=$(wget -q -O - https://composer.github.io/installer.sig) && \
     php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
     php -r "if (hash_file('SHA384', 'composer-setup.php') === '${EXPECTED_COMPOSER_SIGNATURE}') { echo 'Composer.phar Installer verified'; } else { echo 'Composer.phar Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" && \
     php composer-setup.php --install-dir=/usr/bin --filename=composer && \
-    php -r "unlink('composer-setup.php');"
-
-RUN mkdir -p /etc/nginx && \
-    mkdir -p /var/www/app && \
-    mkdir -p /run/nginx && \
-    mkdir -p /etc/nginx/sites-available/ && \
-    mkdir -p /etc/nginx/sites-enabled/ && \
-    mkdir -p /etc/nginx/ssl/ && \
-    rm -Rf /var/www/* && \
-    mkdir /var/www/html/
+    php -r "unlink('composer-setup.php');" && \
+    # composer parallel install plugin.
+    composer global require hirak/prestissimo
 
 
-# Add CONF
+# Add CONF / DBLOCK
+COPY scripts/dblock /usr/bin
 COPY conf/nginx.conf conf/.inputrc conf/cron.conf conf/application conf/php.ini conf/php.ini conf/php-fpm.conf conf/www.conf \
      scripts/start.sh scripts/init.sh scripts/cron_minutly.sh scripts/logrotate.move.sh /tmp/
 
@@ -137,17 +152,6 @@ RUN mv /tmp/nginx.conf /etc/nginx/nginx.conf && \
     rm /usr/local/etc/php-fpm.d/zz-docker.conf && \
     chmod +x /start.sh /init.sh /etc/logrotate.move.sh /etc/cron_minutly.sh
 
-# ADD DBLOCK
-COPY scripts/dblock /usr/bin
-
-# TIMEZONE
-ENV TZ=Europe/Prague
-RUN apk add tzdata && \
-    cp /usr/share/zoneinfo/Europe/Prague /etc/localtime && \
-    echo "Europe/Prague" >  /etc/timezone
-
-ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so php
-ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so php-fpm
 
 WORKDIR /application
 

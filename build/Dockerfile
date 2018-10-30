@@ -24,6 +24,7 @@ RUN apk add --no-cache \
   mysql-client \
   nasm \
   nodejs \
+  npm \
   python \
   zlib \
   zlib-dev \

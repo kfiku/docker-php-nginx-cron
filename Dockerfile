@@ -1,4 +1,4 @@
-FROM php:7.1.23-fpm-alpine
+FROM php:7.1.24-fpm-alpine
 
 LABEL maintainer="Grzegorz Klimek <kfiku.com@gmail.com>"
 

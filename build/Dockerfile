@@ -36,7 +36,7 @@ RUN pecl install xdebug-2.5.0 \
 # PHANTOM
 # RUN curl -Ls https://github.com/fgrehm/docker-phantomjs2/releases/download/v2.0.0-20150722/dockerized-phantomjs.tar.gz | tar xz -C /
 
-RUN npm install -g grunt-cli -q --cache-min 999999
+RUN npm install -g npm grunt-cli -q --cache-min 999999
 
 ENV PHP_INI_DIR=/usr/local/etc/php \
     php_conf=$PHP_INI_DIR/php.ini \

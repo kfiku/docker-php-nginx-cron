@@ -26,6 +26,7 @@ RUN apk add --no-cache \
   nodejs \
   npm \
   python \
+  redis \
   zlib \
   zlib-dev \
   make

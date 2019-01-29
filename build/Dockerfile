@@ -49,3 +49,15 @@ RUN ls $PHP_INI_DIR/conf.d && \
     cat $php_conf | grep memory_limit
 
 COPY php.ini /usr/local/etc/php/php.ini
+
+ENV PHPSTAN_VERSION=0.11.1
+RUN curl -sSL https://github.com/phpstan/phpstan/releases/download/${PHPSTAN_VERSION}/phpstan.phar -o phpstan.phar && \
+    # Install it as an executable:
+    chmod a+x phpstan.phar && \
+    sudo mv phpstan.phar /usr/bin/phpstan
+
+ENV PHPCS_VERSION=3.4.0
+RUN curl -sSL https://github.com/squizlabs/PHP_CodeSniffer/releases/download/${PHPCS_VERSION}/phpcs.phar -o phpcs.phar && \
+    # Install it as an executable:
+    chmod a+x phpcs.phar && \
+    sudo mv phpcs.phar /usr/bin/phpcs

@@ -48,8 +48,6 @@ RUN ls $PHP_INI_DIR/conf.d && \
     sed -i -e "s/memory_limit\s*=\s*512M/memory_limit = 5G/g" $php_conf && \
     cat $php_conf | grep memory_limit
 
-COPY php.ini /usr/local/etc/php/php.ini
-
 ENV PHPSTAN_VERSION=0.11.1
 RUN curl -sSL https://github.com/phpstan/phpstan/releases/download/${PHPSTAN_VERSION}/phpstan.phar -o phpstan.phar && \
     # Install it as an executable:

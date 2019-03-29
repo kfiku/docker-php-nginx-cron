@@ -103,10 +103,10 @@ RUN apk add --no-cache --virtual .build-deps \
     make && \
     make install && \
     make clean && \
-    curl -SL "http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz" -o GeoIP.dat.gz && \
-    mkdir -p /usr/share/GeoIP && \
-    gzip -d GeoIP.dat.gz && \
-    mv GeoIP.dat /usr/share/GeoIP/ && \
+    # curl -SL "https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz" -o GeoIP.dat.gz && \
+    # mkdir -p /usr/share/GeoIP && \
+    # gzip -d GeoIP.dat.gz && \
+    # mv GeoIP.dat /usr/share/GeoIP/ && \
     # echo "extension=geoip.so" > /usr/local/etc/php/conf.d/00_geoip.ini && \
     apk del .build-deps && \
     rm -rf /usr/src/php-geoip && \
@@ -152,6 +152,7 @@ RUN mv /tmp/nginx.conf /etc/nginx/nginx.conf && \
     rm /usr/local/etc/php-fpm.d/zz-docker.conf && \
     chmod +x /start.sh /init.sh /etc/logrotate.move.sh /etc/cron_minutly.sh
 
+COPY conf/GeoIP.dat /usr/share/GeoIP/GeoIP.dat
 
 WORKDIR /application
 

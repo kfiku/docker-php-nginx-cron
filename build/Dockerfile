@@ -1,8 +1,10 @@
 FROM kfiku/docker-php-nginx-cron
 
-RUN apk update
-
-RUN apk add --no-cache \
+RUN echo http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories && \
+    echo http://nl.alpinelinux.org/alpine/edge/main >> /etc/apk/repositories && \
+    echo http://nl.alpinelinux.org/alpine/edge/community >> /etc/apk/repositories && \
+  apk update && \
+  apk add --no-cache \
   alpine-sdk \
   autoconf \
   automake \
@@ -48,14 +50,14 @@ RUN ls $PHP_INI_DIR/conf.d && \
     sed -i -e "s/memory_limit\s*=\s*512M/memory_limit = 5G/g" $php_conf && \
     cat $php_conf | grep memory_limit
 
-ENV PHPSTAN_VERSION=0.11.1
+ENV PHPSTAN_VERSION=0.11.5
 RUN curl -sSL https://github.com/phpstan/phpstan/releases/download/${PHPSTAN_VERSION}/phpstan.phar -o phpstan.phar && \
     # Install it as an executable:
     chmod a+x phpstan.phar && \
-    sudo mv phpstan.phar /usr/bin/phpstan
+    mv phpstan.phar /usr/bin/phpstan
 
-ENV PHPCS_VERSION=3.4.0
+ENV PHPCS_VERSION=3.4.1
 RUN curl -sSL https://github.com/squizlabs/PHP_CodeSniffer/releases/download/${PHPCS_VERSION}/phpcs.phar -o phpcs.phar && \
     # Install it as an executable:
     chmod a+x phpcs.phar && \
-    sudo mv phpcs.phar /usr/bin/phpcs
+    mv phpcs.phar /usr/bin/phpcs

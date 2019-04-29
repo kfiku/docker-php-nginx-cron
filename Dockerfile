@@ -1,4 +1,4 @@
-FROM php:7.1.24-fpm-alpine
+FROM php:7.1.28-fpm-alpine
 
 LABEL maintainer="Grzegorz Klimek <kfiku.com@gmail.com>"
 
@@ -7,13 +7,14 @@ ENV TZ=Europe/Prague
 
 # DEPENDENCIES
 RUN echo http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories && \
-    echo http://nl.alpinelinux.org/alpine/edge/community >> /etc/apk/repositories && \
-    apk update && \
+    echo http://nl.alpinelinux.org/alpine/edge/main >> /etc/apk/repositories && \
+    echo http://nl.alpinelinux.org/alpine/edge/community >> /etc/apk/repositories
+RUN apk update && \
     apk add --no-cache \
         bash \
         curl \
         grep \
-        libcrypto1.0 \
+        libcrypto1.1 \
         logrotate \
         mysql-client \
         nginx \
